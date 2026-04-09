@@ -1,0 +1,15 @@
+package com.integration_service.repository;
+
+
+import com.integration_service.entity.WebhookEvent;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
+
+@Repository
+public interface WebhookEventRepo extends JpaRepository<WebhookEvent, UUID> {
+
+    boolean existsByExternalEventId(String externalEventId);
+}
+
