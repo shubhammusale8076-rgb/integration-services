@@ -1,11 +1,11 @@
-package com.integration_service.dto;
+package com.integration_service.razorpay.RazorpayConfig;
 
 import lombok.Data;
 
 @Data
 public class RazorpayConfig {
 
-    private String keyId;
+    private String key;
     private String keySecret;
     private String webhookSecret;
 }

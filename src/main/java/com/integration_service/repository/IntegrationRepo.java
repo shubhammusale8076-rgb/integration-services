@@ -9,8 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface IntegrationRepo extends JpaRepository<Integration, UUID> {
-    Optional<Integration> findByTenantAndProvider(String tenant, String provider);
+    Optional<Integration> findByTenantIdAndProvider(String tenant, String provider);
 
-    Optional<Integration> findByProviderAndPhoneNumberId(String whatsapp, String phoneNumberId);
 }
 

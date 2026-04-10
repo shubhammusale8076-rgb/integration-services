@@ -36,5 +36,5 @@ public class Integration {
 
     private LocalDateTime createdAt;
 
-    private String tenant_id;
+    private String tenantId;
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -17,14 +18,20 @@ public class IntegrationTemplate {
     @GeneratedValue
     private UUID id;
 
-    private String provider; // RAZORPAY, WHATSAPP, GOOGLE
+    private String tenantId;
 
-    private String displayName;
+    private String service; // RAZORPAY, WHATSAPP, GOOGLE
 
     private String authType; // OAUTH, API_KEY
 
     @Column(columnDefinition = "TEXT")
     private String configSchema; // JSON schema for form
 
+    private boolean enabled;
+
+    private String mode; // MANUAL / AUTOMATED
+
     private Boolean active;
+
+    private LocalDateTime createdAt;
 }
