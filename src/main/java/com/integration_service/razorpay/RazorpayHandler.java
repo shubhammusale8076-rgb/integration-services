@@ -7,7 +7,7 @@ import com.integration_service.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.razorpay.service.RazorpayClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
@@ -21,7 +21,8 @@ public class RazorpayHandler implements IntegrationHandler {
     @Override
     public boolean supports(String eventType) {
         return "PAYMENT_CREATE".equals(eventType)
-                || "MANUAL_TRIGGER".equals(eventType);
+                || "MANUAL_TRIGGER".equals(eventType)
+                || "PAYMENT_SUCCESS".equals(eventType);
     }
 
     @Override
@@ -30,10 +31,7 @@ public class RazorpayHandler implements IntegrationHandler {
         // TODO: use your existing Razorpay logic here
 
         try {
-            RazorpayConfig razorpayConfig = objectMapper.readValue(
-                    config.getConfigSchema(),
-                    RazorpayConfig.class
-            );
+            RazorpayConfig razorpayConfig = parseConfig(config, RazorpayConfig.class);
 
             Map<String, Object> data = event.getData();
 
@@ -58,5 +56,14 @@ public class RazorpayHandler implements IntegrationHandler {
     @Override
     public String getService() {
         return "RAZORPAY";
+    }
+
+    @Override
+    public <T> T parseConfig(IntegrationTemplate template, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(template.getConfigSchema(), clazz);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse Razorpay config", e);
+        }
     }
 }

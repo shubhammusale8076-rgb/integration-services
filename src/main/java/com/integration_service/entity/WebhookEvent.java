@@ -22,7 +22,7 @@ public class WebhookEvent {
     @GeneratedValue
     private UUID id;
 
-    private String tenant_id;
+    private String tenantId;
 
     private String source; // RAZORPAY, WHATSAPP, STRIPE
 

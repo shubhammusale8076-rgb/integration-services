@@ -5,7 +5,7 @@ import com.integration_service.entity.ExecutionLog;
 import com.integration_service.repository.ExecutionLogRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 

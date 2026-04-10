@@ -9,4 +9,5 @@ public interface IntegrationHandler {
 
     Object  execute(EventRequest event, IntegrationTemplate config);
     String getService(); // RAZORPAY
+    <T> T parseConfig(IntegrationTemplate template, Class<T> clazz);
 }
