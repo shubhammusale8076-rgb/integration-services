@@ -2,6 +2,7 @@ package com.integration_service.razorpay.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.integration_service.config.TenantContext;
+import com.integration_service.constants.EventTypes;
 import com.integration_service.dto.EventRequest;
 import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.handler.IntegrationHandler;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,13 +100,30 @@ public class RazorpayWebhookService {
     private void handleEvent(WebhookParser parser, JsonNode json) {
 
         String eventType = parser.extractEventType(json);
-        Map<String, Object> eventData = parser.parsePayload(json);
 
         if ("payment.captured".equals(eventType)) {
 
+            JsonNode payment = json.get("payload")
+                    .get("payment")
+                    .get("entity");
+
+            String phone = payment.has("contact") ? payment.get("contact").asText() : null;
+
+            String name = payment.has("notes") && payment.get("notes").has("name")
+                    ? payment.get("notes").get("name").asText()
+                    : "Member";
+
+            int amount = payment.get("amount").asInt();
+
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("paymentId", payment.get("id").asText());
+            eventData.put("amount", amount);
+            eventData.put("phone", phone);
+            eventData.put("name", name);
+
             // 🔥 1. Trigger internal event
             EventRequest event = new EventRequest();
-            event.setEventType("PAYMENT_SUCCESS");
+            event.setEventType(EventTypes.PAYMENT_SUCCESS);
             event.setData(eventData);
 
             eventService.processEvent(event);

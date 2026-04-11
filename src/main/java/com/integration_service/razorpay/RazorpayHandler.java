@@ -26,7 +26,7 @@ public class RazorpayHandler implements IntegrationHandler {
     }
 
     @Override
-    public Object  execute(EventRequest event , IntegrationTemplate config) {
+    public Object execute(EventRequest event , IntegrationTemplate config) {
 
         // TODO: use your existing Razorpay logic here
 
@@ -35,7 +35,7 @@ public class RazorpayHandler implements IntegrationHandler {
 
             Map<String, Object> data = event.getData();
 
-            int amount = (int) data.get("amount");
+            int amount = ((Number) data.get("amount")).intValue();
             String phone = (String) data.get("phone");
 
             String paymentLink = razorpayService.createPaymentLink(
