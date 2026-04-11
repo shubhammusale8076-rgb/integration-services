@@ -1,15 +1,18 @@
 package com.integration_service.service.integrationService;
 
 import com.integration_service.config.TenantContext;
+import com.integration_service.constants.Services;
 import com.integration_service.dto.integrationDto.IntegrationConfigResponse;
 import com.integration_service.dto.integrationDto.IntegrationSummaryResponse;
 import com.integration_service.dto.integrationDto.IntegrationTemplateRequest;
 import com.integration_service.dto.ResponseDto;
 import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.mapper.IntegrationConfigMapper;
+import com.integration_service.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.repository.IntegrationTemplateRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +24,7 @@ public class IntegrationConfigService {
 
     private final IntegrationTemplateRepo repository;
     private final IntegrationConfigMapper integrationConfigMapper;
+    private final ObjectMapper objectMapper;
 
     public ResponseDto save(IntegrationTemplateRequest config) {
 
@@ -28,6 +32,15 @@ public class IntegrationConfigService {
 
         entity.setTenantId(TenantContext.getTenant());
         entity.setCreatedAt(LocalDateTime.now());
+
+        if (Services.RAZORPAY.equals(config.getService())) {
+
+            try {
+                objectMapper.readValue(config.getConfigJson(), RazorpayConfig.class);
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid Razorpay config JSON");
+            }
+        }
 
          repository.save(entity);
 

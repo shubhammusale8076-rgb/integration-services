@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface WebhookEventRepo extends JpaRepository<WebhookEvent, UUID> {
+public interface WebhookEventRepo extends JpaRepository<WebhookEvent, String> {
 
     boolean existsByExternalEventId(String externalEventId);
 }

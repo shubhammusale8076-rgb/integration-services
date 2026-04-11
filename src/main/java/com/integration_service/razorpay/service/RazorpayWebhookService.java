@@ -1,22 +1,26 @@
 package com.integration_service.razorpay.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.integration_service.config.TenantContext;
 import com.integration_service.dto.EventRequest;
 import com.integration_service.entity.IntegrationTemplate;
+import com.integration_service.handler.IntegrationHandler;
+import com.integration_service.integration.parser.ParserFactory;
+import com.integration_service.integration.parser.WebhookParser;
 import com.integration_service.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.repository.IntegrationTemplateRepo;
 import com.integration_service.service.EventService;
 import com.integration_service.service.ExecutionLogService;
 import com.integration_service.service.GymCallbackService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -28,16 +32,18 @@ public class RazorpayWebhookService {
     private final EventService eventService;
     private final ExecutionLogService logService;
     private final GymCallbackService gymCallbackService;
+    private final ParserFactory parserFactory;
+    private final List<IntegrationHandler> handlers;
 
     public void processWebhook(String signature, String payload) {
 
         try {
             JsonNode json = objectMapper.readTree(payload);
 
-            String eventType = json.get("event").asText();
+            WebhookParser parser = parserFactory.getParser("RAZORPAY");
 
             // extract tenantId (IMPORTANT DESIGN DECISION)
-            String tenantId = extractTenant(json);
+            String tenantId = parser.extractTenantId(json);
 
             TenantContext.setTenant(tenantId);
 
@@ -45,10 +51,14 @@ public class RazorpayWebhookService {
                     .findByTenantIdAndService(tenantId, "RAZORPAY")
                     .orElseThrow(() -> new RuntimeException("Config not found"));
 
-            RazorpayConfig razorpayConfig = objectMapper.readValue(
-                    config.getConfigSchema(),
-                    RazorpayConfig.class
-            );
+            IntegrationHandler handler = handlers.stream()
+                    .filter(h -> "RAZORPAY".equalsIgnoreCase(h.getService()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Razorpay handler not found"));
+
+            RazorpayConfig razorpayConfig = handler.parseConfig(config, RazorpayConfig.class);
+
+
 
             // 🔐 verify signature
             if (!verifySignature(payload, signature, razorpayConfig.getWebhookSecret())) {
@@ -56,7 +66,7 @@ public class RazorpayWebhookService {
             }
 
             // ✅ handle event
-            handleEvent(eventType, json);
+            handleEvent(parser, json);
 
         } catch (Exception ex) {
             logService.logFailure("RAZORPAY", "WEBHOOK", payload, ex);
@@ -84,29 +94,13 @@ public class RazorpayWebhookService {
         }
     }
 
-    private String extractTenant(JsonNode json) {
-        return json.get("payload")
-                .get("payment")
-                .get("entity")
-                .get("notes")
-                .get("tenantId")
-                .asText();
-    }
 
-    private void handleEvent(String eventType, JsonNode json) {
+    private void handleEvent(WebhookParser parser, JsonNode json) {
+
+        String eventType = parser.extractEventType(json);
+        Map<String, Object> eventData = parser.parsePayload(json);
 
         if ("payment.captured".equals(eventType)) {
-
-            JsonNode payment = json.get("payload")
-                    .get("payment")
-                    .get("entity");
-
-            Map<String, Object> eventData = Map.of(
-                    "paymentId", payment.get("id").asText(),
-                    "amount", payment.get("amount").asInt(),
-                    "status", payment.get("status").asText(),
-                    "phone", payment.get("contact").asText()
-            );
 
             // 🔥 1. Trigger internal event
             EventRequest event = new EventRequest();

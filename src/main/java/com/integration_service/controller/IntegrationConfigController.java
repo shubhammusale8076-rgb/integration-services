@@ -28,18 +28,18 @@ public class IntegrationConfigController {
         return ResponseEntity.ok(service.getTenantConfigs());
     }
 
-    @GetMapping("/{service}")
+    @GetMapping("/{serviceName}")
     public ResponseEntity<IntegrationConfigResponse> getConfig(@PathVariable String serviceName) {
         IntegrationConfigResponse response = service.getConfigByService(serviceName);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PutMapping("/{service}/toggle")
+    @PutMapping("/{serviceName}/toggle")
     public ResponseEntity<?> toggle(@PathVariable String serviceName) {
         return ResponseEntity.ok(service.toggle(serviceName));
     }
 
-    @PutMapping("/{service}/mode")
+    @PutMapping("/{serviceName}/mode")
     public ResponseEntity<?> updateMode(@PathVariable String serviceName, @RequestParam String mode) {
 
         return ResponseEntity.ok(service.updateMode(serviceName, mode));

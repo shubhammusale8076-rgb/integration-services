@@ -1,5 +1,6 @@
 package com.integration_service.service;
 
+import com.integration_service.constants.Services;
 import com.integration_service.dto.EventRequest;
 import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.handler.IntegrationHandler;
@@ -19,6 +20,8 @@ public class ManualExecutionService {
     private final ExecutionLogService logService;
 
     public Object execute(String service, Map<String, Object> data) {
+
+        validate(service, data);
 
         IntegrationTemplate config = configService.getByService(service)
                 .orElseThrow(() -> new RuntimeException("Integration not configured"));
@@ -54,6 +57,20 @@ public class ManualExecutionService {
             logService.logFailure(service, "MANUAL_TRIGGER", data, ex);
 
             throw ex;
+        }
+    }
+
+    private void validate(String service, Map<String, Object> data) {
+
+        if (Services.RAZORPAY.equals(service)) {
+
+            if (!data.containsKey("amount")) {
+                throw new RuntimeException("Amount is required");
+            }
+
+            if (!data.containsKey("phone")) {
+                throw new RuntimeException("Phone is required");
+            }
         }
     }
 }
