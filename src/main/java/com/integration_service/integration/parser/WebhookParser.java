@@ -7,5 +7,6 @@ public interface WebhookParser {
     String getSource();
     String extractTenantId(JsonNode payload);
     String extractEventType(JsonNode payload);
+    String extractExternalEventId(JsonNode payload);
     Map<String, Object> parsePayload(JsonNode payload);
 }

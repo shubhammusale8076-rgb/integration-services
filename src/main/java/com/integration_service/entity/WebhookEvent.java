@@ -11,7 +11,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "webhook_events")
+@Table(name = "webhook_events", indexes = {
+        @Index(name = "idx_webhook_external_id", columnList = "externalEventId"),
+        @Index(name = "idx_webhook_tenant_id", columnList = "tenantId")
+})
 @Getter
 @Setter
 @AllArgsConstructor

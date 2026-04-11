@@ -14,7 +14,7 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret:default_secret_key_which_is_at_least_32_characters_long}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     private SecretKey key;

@@ -28,6 +28,10 @@ public class RazorpayWebhookParser implements WebhookParser {
         return json.get("event").asText();
     }
 
+    public String extractExternalEventId(JsonNode json) {
+        return json.get("id").asText();
+    }
+
     @Override
     public Map<String, Object> parsePayload(JsonNode json) {
         String eventType = extractEventType(json);

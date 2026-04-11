@@ -6,6 +6,7 @@ import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.handler.IntegrationHandler;
 import com.integration_service.service.integrationService.IntegrationConfigService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class DispatcherService {
     private final IntegrationConfigService configService;
     private final ExecutionLogService logService;
 
+    @Async
     public void dispatch(EventRequest event) {
 
         String tenantId = TenantContext.getTenant();

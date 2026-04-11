@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "integration_templates")
+@Table(name = "integration_templates", indexes = {
+        @Index(name = "idx_template_tenant_id", columnList = "tenantId")
+})
 @Getter
 @Setter
 public class IntegrationTemplate {

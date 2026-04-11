@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integration_service.config.TenantContext;
 import com.integration_service.dto.EventRequest;
+import com.integration_service.entity.EventStatus;
 import com.integration_service.entity.IntegrationTemplate;
+import com.integration_service.entity.WebhookEvent;
 import com.integration_service.handler.IntegrationHandler;
 import com.integration_service.integration.parser.ParserFactory;
 import com.integration_service.integration.parser.WebhookParser;
 import com.integration_service.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.repository.IntegrationTemplateRepo;
+import com.integration_service.repository.WebhookEventRepo;
 import com.integration_service.service.EventService;
 import com.integration_service.service.ExecutionLogService;
 import com.integration_service.service.GymCallbackService;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +32,7 @@ public class RazorpayWebhookService {
 
     private final ObjectMapper objectMapper;
     private final IntegrationTemplateRepo configRepository;
+    private final WebhookEventRepo webhookEventRepo;
     private final EventService eventService;
     private final ExecutionLogService logService;
     private final GymCallbackService gymCallbackService;
@@ -39,6 +44,11 @@ public class RazorpayWebhookService {
         try {
             JsonNode json = objectMapper.readTree(payload);
             WebhookParser parser = parserFactory.getParser("RAZORPAY");
+
+            String externalEventId = parser.extractExternalEventId(json);
+            if (webhookEventRepo.existsByExternalEventId(externalEventId)) {
+                return; // Idempotency check
+            }
 
             String tenantId = parser.extractTenantId(json);
             TenantContext.setTenant(tenantId);
@@ -58,6 +68,18 @@ public class RazorpayWebhookService {
             if (!verifySignature(payload, signature, razorpayConfig.getWebhookSecret())) {
                 throw new RuntimeException("Invalid signature");
             }
+
+            // Save event for idempotency
+            WebhookEvent webhookEvent = new WebhookEvent();
+            webhookEvent.setExternalEventId(externalEventId);
+            webhookEvent.setTenantId(tenantId);
+            webhookEvent.setSource("RAZORPAY");
+            webhookEvent.setEventType(parser.extractEventType(json));
+            webhookEvent.setPayload(payload);
+            webhookEvent.setStatus(EventStatus.DONE);
+            webhookEvent.setCreatedAt(LocalDateTime.now());
+            webhookEvent.setProcessedAt(LocalDateTime.now());
+            webhookEventRepo.save(webhookEvent);
 
             // ✅ handle event
             handleEvent(parser, json);
