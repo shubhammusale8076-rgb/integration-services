@@ -6,6 +6,7 @@ import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.handler.IntegrationHandler;
 import com.integration_service.service.integrationService.IntegrationConfigService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,11 +21,13 @@ public class DispatcherService {
     private final IntegrationConfigService configService;
     private final ExecutionLogService logService;
 
-    public void dispatch(EventRequest event) {
+    @Async
+    public void dispatch(EventRequest event, String tenantId) {
 
-        String tenantId = TenantContext.getTenant();
+        TenantContext.setTenant(tenantId);
 
-        List<IntegrationTemplate> configs = configService.getTenantConfig();
+        try {
+            List<IntegrationTemplate> configs = configService.getTenantConfig();
 
         if (configs.isEmpty()) {
             return;
@@ -77,6 +80,9 @@ public class DispatcherService {
 
                 // Don't break loop — continue other integrations
             }
+        }
+        } finally {
+            TenantContext.clear();
         }
     }
 }

@@ -6,7 +6,7 @@ import com.integration_service.entity.MessageLog;
 import com.integration_service.repository.MessageLogRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 
