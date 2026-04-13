@@ -10,6 +10,7 @@ import com.integration_service.integration.parser.ParserFactory;
 import com.integration_service.integration.parser.WebhookParser;
 import com.integration_service.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.repository.IntegrationTemplateRepo;
+import com.integration_service.repository.WebhookEventRepo;
 import com.integration_service.service.EventService;
 import com.integration_service.service.ExecutionLogService;
 import com.integration_service.service.GymCallbackService;
@@ -32,6 +33,7 @@ public class RazorpayWebhookService {
     private final ObjectMapper objectMapper;
     private final IntegrationTemplateRepo configRepository;
     private final EventService eventService;
+    private final WebhookEventRepo webhookEventRepo;
     private final ExecutionLogService logService;
     private final GymCallbackService gymCallbackService;
     private final ParserFactory parserFactory;
@@ -106,6 +108,11 @@ public class RazorpayWebhookService {
             JsonNode payment = json.get("payload")
                     .get("payment")
                     .get("entity");
+
+            String externalId = payment.get("id").asText();
+            if (webhookEventRepo.existsByExternalEventId(externalId)) {
+                return;
+            }
 
             String phone = payment.has("contact") ? payment.get("contact").asText() : null;
 

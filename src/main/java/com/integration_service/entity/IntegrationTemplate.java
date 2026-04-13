@@ -2,16 +2,22 @@ package com.integration_service.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "integration_templates")
+@Table(name = "integration_templates", indexes = {
+        @Index(name = "idx_template_tenant_id", columnList = "tenantId")
+})
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class IntegrationTemplate {
 
     @Id

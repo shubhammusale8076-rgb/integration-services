@@ -1,6 +1,7 @@
 package com.integration_service.service;
 
 import com.integration_service.dto.configDto.WhatsAppConfig;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,9 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class WhatsAppClient {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public Map<String, Object> sendMessage(
             WhatsAppConfig config,

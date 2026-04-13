@@ -15,6 +15,18 @@ public class TenantFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+        if (path.startsWith("/webhooks/") || path.startsWith("/api/webhooks/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
+        if (path.startsWith("/api/google")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String tenantId = request.getHeader("X-Tenant-ID");
 
         if (tenantId == null) {

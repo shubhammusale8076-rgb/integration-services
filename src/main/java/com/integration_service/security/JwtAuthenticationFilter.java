@@ -40,6 +40,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
+        String path = request.getRequestURI();
+
+        if (path.startsWith("/api/google")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         filterChain.doFilter(request, response);
     }
 }

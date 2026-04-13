@@ -1,5 +1,6 @@
 package com.integration_service.service.integrationService;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integration_service.config.TenantContext;
 import com.integration_service.constants.Services;
 import com.integration_service.dto.integrationDto.IntegrationConfigResponse;
@@ -12,7 +13,6 @@ import com.integration_service.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.repository.IntegrationTemplateRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;

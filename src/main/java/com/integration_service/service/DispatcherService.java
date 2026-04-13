@@ -6,6 +6,7 @@ import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.handler.IntegrationHandler;
 import com.integration_service.service.integrationService.IntegrationConfigService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,62 +21,70 @@ public class DispatcherService {
     private final IntegrationConfigService configService;
     private final ExecutionLogService logService;
 
-    public void dispatch(EventRequest event) {
+    @Async
+    public void dispatch(EventRequest event, String tenantId) {
+        {
 
-        String tenantId = TenantContext.getTenant();
-
-        List<IntegrationTemplate> configs = configService.getTenantConfig();
-
-        if (configs.isEmpty()) {
-            return;
-        }
-
-        // Convert configs → Map for faster lookup
-        Map<String, IntegrationTemplate> configMap = configs.stream()
-                .filter(config -> config.isEnabled())
-                .collect(Collectors.toMap(
-                        IntegrationTemplate::getService,
-                        config -> config,
-                        (c1, c2) -> c1 // handle duplicates
-                ));
-
-        for (IntegrationHandler handler : handlers) {
-
-            IntegrationTemplate config = configMap.get(handler.getService());
-
-            if (config == null) {
-                continue;
-            }
-
-            if (!"AUTOMATED".equalsIgnoreCase(config.getMode())
-                    && !"HYBRID".equalsIgnoreCase(config.getMode())) {
-                continue;
-            }
-
-            if (!handler.supports(event.getEventType())) {
-                continue;
-            }
-
+            TenantContext.setTenant(tenantId);
             try {
-                Object response = handler.execute(event, config);
+                List<IntegrationTemplate> configs = configService.getTenantConfig();
 
-                logService.logSuccess(
-                        handler.getService(),
-                        event.getEventType(),
-                        event.getData(),
-                        response
-                );
+                if (configs.isEmpty()) {
+                    return;
+                }
 
-            } catch (Exception ex) {
+                // Convert configs → Map for faster lookup
+                Map<String, IntegrationTemplate> configMap = configs.stream()
+                        .filter(config -> config.isEnabled())
+                        .collect(Collectors.toMap(
+                                IntegrationTemplate::getService,
+                                config -> config,
+                                (c1, c2) -> c1 // handle duplicates
+                        ));
 
-                logService.logFailure(
-                        handler.getService(),
-                        event.getEventType(),
-                        event.getData(),
-                        ex
-                );
+                for (IntegrationHandler handler : handlers) {
 
-                // Don't break loop — continue other integrations
+                    IntegrationTemplate config = configMap.get(handler.getService());
+
+                    if (config == null) {
+                        continue;
+                    }
+
+                    if (!"AUTOMATED".equalsIgnoreCase(config.getMode())
+                            && !"HYBRID".equalsIgnoreCase(config.getMode())) {
+                        continue;
+                    }
+
+                    if (!handler.supports(event.getEventType())) {
+                        continue;
+                    }
+
+                    try {
+                        Object response = handler.execute(event, config);
+
+                        logService.logSuccess(
+                                handler.getService(),
+                                event.getEventType(),
+                                event.getData(),
+                                response
+                        );
+
+                    } catch (Exception ex) {
+
+                        logService.logFailure(
+                                handler.getService(),
+                                event.getEventType(),
+                                event.getData(),
+                                ex
+                        );
+
+                        // Don't break loop — continue other integrations
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                TenantContext.clear();
             }
         }
     }

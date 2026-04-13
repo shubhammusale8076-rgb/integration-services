@@ -1,9 +1,6 @@
 package com.integration_service.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +14,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "execution_logs", indexes = {
+        @Index(name = "idx_execution_tenant_id", columnList = "tenantId")
+})
 public class ExecutionLog {
 
     @Id

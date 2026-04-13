@@ -1,12 +1,12 @@
 package com.integration_service.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integration_service.config.TenantContext;
 import com.integration_service.constants.Services;
 import com.integration_service.entity.MessageLog;
 import com.integration_service.repository.MessageLogRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 

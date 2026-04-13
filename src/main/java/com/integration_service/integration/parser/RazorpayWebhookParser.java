@@ -15,12 +15,11 @@ public class RazorpayWebhookParser implements WebhookParser {
 
     @Override
     public String extractTenantId(JsonNode json) {
-        return json.get("payload")
-                .get("payment")
-                .get("entity")
-                .get("notes")
-                .get("tenantId")
-                .asText();
+        JsonNode notes = json.at("/payload/payment/entity/notes");
+        if (notes.isMissingNode() || !notes.has("tenantId")) {
+            throw new IllegalArgumentException("Missing tenantId in webhook payload");
+        }
+        return notes.get("tenantId").asText();
     }
 
     @Override
