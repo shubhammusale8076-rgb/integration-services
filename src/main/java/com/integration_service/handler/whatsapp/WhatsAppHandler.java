@@ -1,4 +1,4 @@
-package com.integration_service.integration.whatsapp;
+package com.integration_service.handler.whatsapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integration_service.constants.EventTypes;
@@ -40,7 +40,8 @@ public class WhatsAppHandler implements IntegrationHandler {
     @Override
     public boolean supports(String eventType) {
         return EventTypes.MANUAL_TRIGGER.equals(eventType)
-                || EventTypes.PAYMENT_SUCCESS.equals(eventType);
+                || EventTypes.PAYMENT_SUCCESS.equals(eventType)
+                || "TRIAL_REMINDER".equals(eventType); // ✅ new;
     }
 
     @Override
@@ -58,7 +59,20 @@ public class WhatsAppHandler implements IntegrationHandler {
             String template;
             Map<String, Object> params;
 
-            if (EventTypes.PAYMENT_SUCCESS.equals(event.getEventType())) {
+            if ("TRIAL_REMINDER".equals(event.getEventType())) {
+
+                phone = (String) data.get("phone");
+
+                template = WhatsAppTemplates.REMINDER;
+
+                params = Map.of(
+                        "name", data.get("name"),
+                        "time", data.get("time")
+                );
+
+            }
+            // 🔥 2. PAYMENT SUCCESS (EXISTING - NO CHANGE)
+            else if (EventTypes.PAYMENT_SUCCESS.equals(event.getEventType())) {
 
                 phone = (String) data.get("phone");
 
