@@ -1,6 +1,6 @@
 package com.integration_service.service;
 
-import com.integration_service.constants.Services;
+import com.integration_service.common.constants.Services;
 import com.integration_service.dto.EventRequest;
 import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.handler.IntegrationHandler;

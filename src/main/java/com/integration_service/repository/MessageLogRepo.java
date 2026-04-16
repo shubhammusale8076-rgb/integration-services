@@ -1,6 +1,6 @@
 package com.integration_service.repository;
 
-import com.integration_service.entity.MessageLog;
+import com.integration_service.integrations.whatsapp.entity.MessageLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

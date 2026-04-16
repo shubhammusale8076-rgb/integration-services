@@ -1,15 +1,15 @@
 package com.integration_service.service.integrationService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.integration_service.config.TenantContext;
-import com.integration_service.constants.Services;
+import com.integration_service.common.config.TenantContext;
+import com.integration_service.common.constants.Services;
 import com.integration_service.dto.integrationDto.IntegrationConfigResponse;
 import com.integration_service.dto.integrationDto.IntegrationSummaryResponse;
 import com.integration_service.dto.integrationDto.IntegrationTemplateRequest;
 import com.integration_service.dto.ResponseDto;
 import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.mapper.IntegrationConfigMapper;
-import com.integration_service.razorpay.RazorpayConfig.RazorpayConfig;
+import com.integration_service.integrations.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.repository.IntegrationTemplateRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

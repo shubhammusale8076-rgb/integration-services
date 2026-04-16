@@ -1,6 +1,6 @@
 package com.integration_service.service.integrationService;
 
-import com.integration_service.config.TenantContext;
+import com.integration_service.common.config.TenantContext;
 import com.integration_service.dto.integrationDto.IntegrationSummaryResponse;
 import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.repository.IntegrationTemplateRepo;

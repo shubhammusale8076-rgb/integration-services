@@ -1,11 +1,11 @@
 package com.integration_service.controller;
 
-import com.integration_service.config.TenantContext;
-import com.integration_service.entity.GoogleIntegration;
+import com.integration_service.common.config.TenantContext;
+import com.integration_service.integrations.google.entity.GoogleIntegration;
 import com.integration_service.repository.GoogleIntegrationRepo;
-import com.integration_service.service.googleService.GoogleOAuthService;
-import com.integration_service.service.googleService.GoogleTokenService;
-import com.integration_service.service.googleService.GoogleUserService;
+import com.integration_service.integrations.google.auth.GoogleOAuthService;
+import com.integration_service.integrations.google.auth.GoogleTokenService;
+import com.integration_service.integrations.google.auth.GoogleUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

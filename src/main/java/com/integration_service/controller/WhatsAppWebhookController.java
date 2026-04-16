@@ -1,6 +1,6 @@
 package com.integration_service.controller;
 
-import com.integration_service.service.MessageLogService;
+import com.integration_service.integrations.whatsapp.service.MessageLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

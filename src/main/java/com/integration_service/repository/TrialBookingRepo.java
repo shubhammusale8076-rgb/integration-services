@@ -1,6 +1,6 @@
 package com.integration_service.repository;
 
-import com.integration_service.entity.TrialBooking;
+import com.integration_service.integrations.google.entity.TrialBooking;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
