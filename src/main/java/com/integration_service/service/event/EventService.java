@@ -1,6 +1,5 @@
-package com.integration_service.service;
+package com.integration_service.service.event;
 
-import com.integration_service.common.config.TenantContext;
 import com.integration_service.dto.EventRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,9 +8,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EventService {
 
-    private final DispatcherService dispatcherService;
+    private final EventProcessorService eventProcessorService;
 
     public void processEvent(EventRequest request) {
-        dispatcherService.dispatch(request, TenantContext.getTenant());
+        // Delegate to the new event processing system
+        eventProcessorService.process(request);
     }
 }

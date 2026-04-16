@@ -42,7 +42,8 @@ public class ManualExecutionService {
 
         EventRequest event = new EventRequest();
         event.setEventType("MANUAL_TRIGGER");
-        event.setData(data);
+        event.setTenantId(com.integration_service.common.config.TenantContext.getTenant());
+        event.setPayload(data);
 
         try {
 

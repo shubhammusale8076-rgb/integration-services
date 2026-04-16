@@ -3,7 +3,7 @@ package com.integration_service.integrations.google.service;
 import com.integration_service.dto.EventRequest;
 import com.integration_service.integrations.google.entity.TrialBooking;
 import com.integration_service.repository.TrialBookingRepo;
-import com.integration_service.service.EventService;
+import com.integration_service.service.event.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,9 @@ public class ReminderScheduler {
 
             EventRequest event = new EventRequest();
             event.setEventType("TRIAL_REMINDER");
+            event.setTenantId(booking.getTenantId());
 
-            event.setData(Map.of(
+            event.setPayload(Map.of(
                     "phone", booking.getClientPhone(),
                     "email", booking.getClientEmail(),
                     "name", booking.getClientName(),

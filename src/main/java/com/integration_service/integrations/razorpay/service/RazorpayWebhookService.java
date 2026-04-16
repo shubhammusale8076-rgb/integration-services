@@ -11,7 +11,7 @@ import com.integration_service.integrations.parser.WebhookParser;
 import com.integration_service.integrations.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.repository.IntegrationTemplateRepo;
 import com.integration_service.repository.WebhookEventRepo;
-import com.integration_service.service.EventService;
+import com.integration_service.service.event.EventService;
 import com.integration_service.service.ExecutionLogService;
 import com.integration_service.service.GymCallbackService;
 import lombok.RequiredArgsConstructor;
@@ -141,7 +141,8 @@ public class RazorpayWebhookService {
                 // 🔥 1. Trigger internal event
                 EventRequest event = new EventRequest();
                 event.setEventType(EventTypes.PAYMENT_SUCCESS);
-                event.setData(eventData);
+            event.setTenantId(TenantContext.getTenant());
+            event.setPayload(eventData);
 
                 eventService.processEvent(event);
 
