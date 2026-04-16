@@ -3,6 +3,7 @@ package com.integration_service.common.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import com.integration_service.common.constants.SecurityConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        if (path.startsWith("/api/google")) {
+        if (path.equals(SecurityConstants.GOOGLE_CALLBACK_PATH)) {
             filterChain.doFilter(request, response);
             return;
         }

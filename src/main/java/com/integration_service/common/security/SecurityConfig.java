@@ -2,6 +2,7 @@ package com.integration_service.common.security;
 
 
 import com.integration_service.common.config.TenantFilter;
+import com.integration_service.common.constants.SecurityConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,8 +26,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/webhooks/**").permitAll()
-                        .requestMatchers("/api/google/**").permitAll()
+                        .requestMatchers(SecurityConstants.WEBHOOKS_PATH_PREFIX + "**").permitAll()
+                        .requestMatchers(SecurityConstants.GOOGLE_CALLBACK_PATH).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
