@@ -40,15 +40,13 @@ public class RazorpayWebhookService {
     private final List<IntegrationHandler> handlers;
 
     public void processWebhook(String signature, String payload) {
-
+        String tenantId = null;
         try {
             JsonNode json = objectMapper.readTree(payload);
-
             WebhookParser parser = parserFactory.getParser("RAZORPAY");
 
             // extract tenantId (IMPORTANT DESIGN DECISION)
-            String tenantId = parser.extractTenantId(json);
-
+            tenantId = parser.extractTenantId(json);
             TenantContext.setTenant(tenantId);
 
             IntegrationTemplate config = configRepository
@@ -62,15 +60,13 @@ public class RazorpayWebhookService {
 
             RazorpayConfig razorpayConfig = handler.parseConfig(config, RazorpayConfig.class);
 
-
-
             // 🔐 verify signature
             if (!verifySignature(payload, signature, razorpayConfig.getWebhookSecret())) {
                 throw new RuntimeException("Invalid signature");
             }
 
             // ✅ handle event
-            handleEvent(parser, json);
+            handleEvent(parser, json, payload);
 
         } catch (Exception ex) {
             logService.logFailure("RAZORPAY", "WEBHOOK", payload, ex);
@@ -99,7 +95,7 @@ public class RazorpayWebhookService {
     }
 
 
-    private void handleEvent(WebhookParser parser, JsonNode json) {
+    private void handleEvent(WebhookParser parser, JsonNode json, String payload) {
 
         String eventType = parser.extractEventType(json);
 
@@ -110,36 +106,62 @@ public class RazorpayWebhookService {
                     .get("entity");
 
             String externalId = payment.get("id").asText();
+
+            // ✅ Check for idempotency early
             if (webhookEventRepo.existsByExternalEventId(externalId)) {
                 return;
             }
 
-            String phone = payment.has("contact") ? payment.get("contact").asText() : null;
+            // ✅ Save Webhook Event as PROCESSING for idempotency (simple lock)
+            com.integration_service.entity.WebhookEvent webhookEvent = new com.integration_service.entity.WebhookEvent();
+            webhookEvent.setTenantId(TenantContext.getTenant());
+            webhookEvent.setSource("RAZORPAY");
+            webhookEvent.setEventType(eventType);
+            webhookEvent.setExternalEventId(externalId);
+            webhookEvent.setPayload(payload);
+            webhookEvent.setStatus(com.integration_service.entity.EventStatus.PROCESSING);
+            webhookEvent.setCreatedAt(java.time.LocalDateTime.now());
+            webhookEvent = webhookEventRepo.save(webhookEvent);
 
-            String name = payment.has("notes") && payment.get("notes").has("name")
-                    ? payment.get("notes").get("name").asText()
-                    : "Member";
+            try {
+                String phone = payment.has("contact") ? payment.get("contact").asText() : null;
 
-            int amount = payment.get("amount").asInt();
+                String name = payment.has("notes") && payment.get("notes").has("name")
+                        ? payment.get("notes").get("name").asText()
+                        : "Member";
 
-            Map<String, Object> eventData = new HashMap<>();
-            eventData.put("paymentId", payment.get("id").asText());
-            eventData.put("amount", amount);
-            eventData.put("phone", phone);
-            eventData.put("name", name);
+                int amount = payment.get("amount").asInt();
 
-            // 🔥 1. Trigger internal event
-            EventRequest event = new EventRequest();
-            event.setEventType(EventTypes.PAYMENT_SUCCESS);
-            event.setData(eventData);
+                Map<String, Object> eventData = new HashMap<>();
+                eventData.put("paymentId", payment.get("id").asText());
+                eventData.put("amount", amount);
+                eventData.put("phone", phone);
+                eventData.put("name", name);
 
-            eventService.processEvent(event);
+                // 🔥 1. Trigger internal event
+                EventRequest event = new EventRequest();
+                event.setEventType(EventTypes.PAYMENT_SUCCESS);
+                event.setData(eventData);
 
-            // 🔥 2. Notify Gym App
-            gymCallbackService.notifyPaymentSuccess(eventData);
+                eventService.processEvent(event);
 
-            // 🔥 3. Log success
-            logService.logSuccess("RAZORPAY", "PAYMENT_SUCCESS", eventData, "Webhook processed");
+                // 🔥 2. Notify Gym App
+                gymCallbackService.notifyPaymentSuccess(eventData);
+
+                // 🔥 3. Log success
+                logService.logSuccess("RAZORPAY", "PAYMENT_SUCCESS", eventData, "Webhook processed");
+
+                // ✅ Mark as DONE
+                webhookEvent.setStatus(com.integration_service.entity.EventStatus.DONE);
+                webhookEvent.setProcessedAt(java.time.LocalDateTime.now());
+                webhookEventRepo.save(webhookEvent);
+
+            } catch (Exception e) {
+                // ✅ Mark as FAILED
+                webhookEvent.setStatus(com.integration_service.entity.EventStatus.FAILED);
+                webhookEventRepo.save(webhookEvent);
+                throw e;
+            }
         }
     }
 

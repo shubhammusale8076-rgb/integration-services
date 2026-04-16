@@ -12,6 +12,7 @@ import com.integration_service.integrations.google.calendar.service.GoogleCalend
 import com.integration_service.integrations.google.auth.GoogleTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -42,18 +43,19 @@ public class GoogleCalendarHandler implements IntegrationHandler {
 
     @Override
     public Object execute(EventRequest event, IntegrationTemplate config) {
+        return executeWithRetry(event, config, 1);
+    }
 
+    private Object executeWithRetry(EventRequest event, IntegrationTemplate config, int retryCount) {
         String tenantId = TenantContext.getTenant();
 
         GoogleIntegration integration = repository.findByTenantId(tenantId)
                 .orElseThrow(() -> new RuntimeException("Google not connected"));
 
         String accessToken = integration.getAccessToken();
-
         Map<String, Object> data = event.getData();
 
         try {
-
             String summary = (String) data.get("summary");
             String description = (String) data.get("description");
 
@@ -67,7 +69,7 @@ public class GoogleCalendarHandler implements IntegrationHandler {
             bookingService.validateSlot(tenantId, start, end);
 
             Map<String, Object> eventBody = CalendarEventBuilder.build(
-                    summary, description,  start.toString(), end.toString(), email);
+                    summary, description, start.toString(), end.toString(), email);
 
             String eventId = calendarClient.createEvent(accessToken, eventBody);
 
@@ -77,16 +79,20 @@ public class GoogleCalendarHandler implements IntegrationHandler {
 
             return "Event created";
 
-        } catch (Exception e){
+        } catch (HttpClientErrorException.Unauthorized e) {
+            if (retryCount > 0) {
+                String newAccessToken = tokenService.refreshAccessToken(
+                        integration.getRefreshToken()
+                );
 
-            String newAccessToken = tokenService.refreshAccessToken(
-                    integration.getRefreshToken()
-            );
+                integration.setAccessToken(newAccessToken);
+                repository.save(integration);
 
-            integration.setAccessToken(newAccessToken);
-            repository.save(integration);
-
-            return execute(event, config); // retry
+                return executeWithRetry(event, config, retryCount - 1);
+            }
+            throw new RuntimeException("Google Calendar execution failed after retry", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Google Calendar execution failed", e);
         }
     }
 }

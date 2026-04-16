@@ -1,6 +1,7 @@
 package com.integration_service.integrations.whatsapp.service;
 
 import com.integration_service.dto.configDto.WhatsAppConfig;
+import com.integration_service.dto.WhatsAppResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,11 +19,7 @@ public class WhatsAppClient {
 
     private final RestTemplate restTemplate;
 
-    public Map<String, Object> sendMessage(
-            WhatsAppConfig config,
-            String phone,
-            Map<String, Object> payload
-    ) {
+    public WhatsAppResponse sendMessage(WhatsAppConfig config, String phone, Map<String, Object> payload) {
 
         String url = "https://graph.facebook.com/"
                 + config.getVersion()
@@ -40,10 +37,10 @@ public class WhatsAppClient {
         HttpEntity<Map<String, Object>> entity =
                 new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(
+        ResponseEntity<WhatsAppResponse> response = restTemplate.postForEntity(
                 url,
                 entity,
-                Map.class
+                WhatsAppResponse.class
         );
 
         return response.getBody();

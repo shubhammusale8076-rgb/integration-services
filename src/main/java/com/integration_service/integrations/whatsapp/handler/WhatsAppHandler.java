@@ -12,6 +12,7 @@ import com.integration_service.handler.IntegrationHandler;
 import com.integration_service.integrations.whatsapp.service.MessageLogService;
 import com.integration_service.integrations.whatsapp.service.WhatsAppClient;
 import com.integration_service.common.util.WhatsAppTemplateBuilder;
+import com.integration_service.dto.WhatsAppResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -95,13 +96,18 @@ public class WhatsAppHandler implements IntegrationHandler {
 
             MessageLog log = logService.createPending(phone, template, payload);
 
-            Map<String, Object> response = client.sendMessage(waConfig, phone, payload);
+            WhatsAppResponse response = client.sendMessage(waConfig, phone, payload);
 
-            String messageId = ((Map<String, Object>)
-                    ((List<Object>) response.get("messages")).get(0))
-                    .get("id").toString();
+            String messageId = null;
+            if (response != null && response.getMessages() != null && !response.getMessages().isEmpty()) {
+                messageId = response.getMessages().get(0).getId();
+            }
 
-            logService.markSent(log, messageId, response);
+            if (messageId != null) {
+                logService.markSent(log, messageId, response);
+            } else {
+                throw new RuntimeException("Failed to extract message ID from WhatsApp response");
+            }
 
             return response;
 
