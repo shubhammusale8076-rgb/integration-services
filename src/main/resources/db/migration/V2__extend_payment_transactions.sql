@@ -1,0 +1,13 @@
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS membership_id UUID;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS core_transaction_id VARCHAR(128);
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS correlation_id VARCHAR(128);
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS payment_link TEXT;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS whatsapp_status VARCHAR(32);
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS webhook_received BOOLEAN DEFAULT FALSE;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS sync_status VARCHAR(32) DEFAULT 'PENDING';
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS member_name VARCHAR(255);
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS last_error TEXT;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS last_sync_attempt_at TIMESTAMP;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS whatsapp_sent_at TIMESTAMP;

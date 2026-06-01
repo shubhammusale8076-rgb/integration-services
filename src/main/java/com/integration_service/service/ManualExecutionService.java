@@ -1,16 +1,19 @@
 package com.integration_service.service;
 
-import com.integration_service.common.constants.Services;
+import com.integration_service.communication.entity.IntegrationType;
+import com.integration_service.communication.entity.TenantIntegration;
 import com.integration_service.dto.EventRequest;
-import com.integration_service.entity.IntegrationTemplate;
 import com.integration_service.handler.IntegrationHandler;
+import com.integration_service.handler.IntegrationTypeResolver;
 import com.integration_service.service.integrationService.IntegrationConfigService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ManualExecutionService {
@@ -19,11 +22,18 @@ public class ManualExecutionService {
     private final IntegrationConfigService configService;
     private final ExecutionLogService logService;
 
-    public Object execute(String service, Map<String, Object> data) {
+    public Object execute(IntegrationType service, Map<String, Object> data) {
+        IntegrationHandler handler = handlers.stream()
+                .filter(h -> h.getService().equals(service))
+                .findFirst()
+                .orElseThrow(() -> {
+                    log.error("No IntegrationHandler registered for manual execution type: {}", service);
+                    return new RuntimeException("Handler not found");
+                });
 
-        validate(service, data);
+        IntegrationType configKey = IntegrationTypeResolver.configKey(service);
 
-        IntegrationTemplate config = configService.getByService(service)
+        TenantIntegration config = configService.getByService(configKey)
                 .orElseThrow(() -> new RuntimeException("Integration not configured"));
 
         if (!config.isEnabled()) {
@@ -35,10 +45,8 @@ public class ManualExecutionService {
             throw new RuntimeException("Manual execution not allowed");
         }
 
-        IntegrationHandler handler = handlers.stream()
-                .filter(h -> h.getService().equals(service))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Handler not found"));
+        log.info("Manual execution via handler {} (config key: {})",
+                handler.getClass().getSimpleName(), configKey);
 
         EventRequest event = new EventRequest();
         event.setEventType("MANUAL_TRIGGER");
@@ -46,32 +54,12 @@ public class ManualExecutionService {
         event.setPayload(data);
 
         try {
-
             Object response = handler.execute(event, config);
-
             logService.logSuccess(service, "MANUAL_TRIGGER", data, response);
-
             return response;
-
         } catch (Exception ex) {
-
             logService.logFailure(service, "MANUAL_TRIGGER", data, ex);
-
             throw ex;
-        }
-    }
-
-    private void validate(String service, Map<String, Object> data) {
-
-        if (Services.RAZORPAY.equals(service)) {
-
-            if (!data.containsKey("amount")) {
-                throw new RuntimeException("Amount is required");
-            }
-
-            if (!data.containsKey("phone")) {
-                throw new RuntimeException("Phone is required");
-            }
         }
     }
 }

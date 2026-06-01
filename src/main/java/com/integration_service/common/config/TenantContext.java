@@ -9,7 +9,7 @@ public class TenantContext {
     }
 
     public static String getTenant() {
-        return currentTenant.get();
+        return currentTenant.    get();
     }
 
     public static void clear() {

@@ -1,7 +1,7 @@
 package com.integration_service.service.event;
 
 import com.integration_service.dto.EventRequest;
-import com.integration_service.handler.event.EventHandler;
+import com.integration_service.event.EventHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

@@ -6,4 +6,6 @@ public class EventTypes {
     public static final String MANUAL_TRIGGER = "MANUAL_TRIGGER";
     public static final String MEMBERSHIP_CREATED = "MEMBERSHIP_CREATED";
     public static final String TRIAL_REMINDER = "TRIAL_REMINDER";
+    public static final String LEAD_FOLLOWUP = "LEAD_FOLLOWUP";
+    public static final String CRM_TRIAL_BOOKING = "CRM_TRIAL_BOOKING";
 }

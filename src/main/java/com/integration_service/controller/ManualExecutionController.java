@@ -1,5 +1,6 @@
 package com.integration_service.controller;
 
+import com.integration_service.communication.entity.IntegrationType;
 import com.integration_service.service.ManualExecutionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public class ManualExecutionController {
 
     @PostMapping("/{service}")
     public ResponseEntity<?> execute(
-            @PathVariable String service,
+            @PathVariable IntegrationType service,
             @RequestBody Map<String, Object> data) {
 
         Object response = manualService.execute(service, data);

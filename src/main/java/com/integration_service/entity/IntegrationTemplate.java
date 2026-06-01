@@ -1,18 +1,22 @@
 package com.integration_service.entity;
 
 
+import com.integration_service.communication.entity.IntegrationType;
+import com.integration_service.enums.IntegrationAuthType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "integration_templates", indexes = {
-        @Index(name = "idx_template_tenant_id", columnList = "tenantId")
+        @Index(name = "idx_template_service", columnList = "service")
 })
 @Getter
 @Setter
@@ -21,23 +25,37 @@ import java.util.UUID;
 public class IntegrationTemplate {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String tenantId;
+    @Enumerated(EnumType.STRING)
+    @Column(unique = true, nullable = false)
+    private IntegrationType service; // RAZORPAY, WHATSAPP, GOOGLE, STRIPE
 
-    private String service; // RAZORPAY, WHATSAPP, GOOGLE
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private IntegrationAuthType authType; // OAUTH, API_KEY, WEBHOOK_ONLY
 
-    private String authType; // OAUTH, API_KEY
+    @Column(nullable = false)
+    private String displayName;
+
+    private String description;
+
+    private String icon;
+
+    private String iconColor;
+
+    private String iconBg;
+
+    private boolean active = true;
 
     @Column(columnDefinition = "TEXT")
     private String configSchema; // JSON schema for form
 
-    private boolean enabled;
-
-    private String mode; // MANUAL / AUTOMATED
-
-    private Boolean active;
-
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

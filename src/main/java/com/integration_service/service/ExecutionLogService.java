@@ -1,6 +1,7 @@
 package com.integration_service.service;
 
 import com.integration_service.common.config.TenantContext;
+import com.integration_service.communication.entity.IntegrationType;
 import com.integration_service.entity.ExecutionLog;
 import com.integration_service.repository.ExecutionLogRepo;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class ExecutionLogService {
     private final ExecutionLogRepo repository;
     private final ObjectMapper objectMapper;
 
-    public void logSuccess(String service,
+    public void logSuccess(IntegrationType service,
                            String eventType,
                            Object request,
                            Object response) {
@@ -24,7 +25,7 @@ public class ExecutionLogService {
         saveLog(service, eventType, "SUCCESS", request, response, null);
     }
 
-    public void logFailure(String service,
+    public void logFailure(IntegrationType service,
                            String eventType,
                            Object request,
                            Exception ex) {
@@ -32,7 +33,7 @@ public class ExecutionLogService {
         saveLog(service, eventType, "FAILED", request, null, ex.getMessage());
     }
 
-    private void saveLog(String service,
+    private void saveLog(IntegrationType service,
                          String eventType,
                          String status,
                          Object request,

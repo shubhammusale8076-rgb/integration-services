@@ -1,5 +1,6 @@
 package com.integration_service.entity;
 
+import com.integration_service.communication.entity.IntegrationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +26,7 @@ public class ExecutionLog {
 
     private String tenantId;
 
-    private String service;     // RAZORPAY
+    private IntegrationType service;     // RAZORPAY
     private String eventType;   // PAYMENT_CREATE
 
     private String status;      // SUCCESS / FAILED
