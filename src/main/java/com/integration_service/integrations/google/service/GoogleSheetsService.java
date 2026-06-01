@@ -102,7 +102,7 @@ public class GoogleSheetsService {
                 values.add(
                         new ArrayList<>(
                                 request.getRows()
-                                        .getFirst()
+                                        .get(0)
                                         .keySet()
                         )
                 );
