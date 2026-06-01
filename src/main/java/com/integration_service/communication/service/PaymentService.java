@@ -9,7 +9,6 @@ import com.integration_service.communication.repository.TenantIntegrationReposit
 import com.integration_service.integrations.razorpay.RazorpayCredentialResolver;
 import com.integration_service.integrations.razorpay.RazorpayConfig.RazorpayConfig;
 import com.integration_service.integrations.razorpay.dto.RazorpayOrderResult;
-import com.integration_service.integrations.razorpay.dto.RazorpayPaymentLinkResult;
 import com.integration_service.integrations.razorpay.service.RazorpayClientService;
 import com.integration_service.service.ExecutionLogService;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,6 @@ public class PaymentService {
     private final RazorpayCredentialResolver credentialResolver;
     private final PaymentCommunicationService paymentCommunicationService;
     private final InvoiceService invoiceService;
-    private final NotificationService notificationService;
     private final ExecutionLogService executionLogService;
 
     @Transactional
@@ -310,7 +308,6 @@ public class PaymentService {
 
         String email = request.getEmail() != null ? request.getEmail() : transaction.getMemberEmail();
         byte[] pdf = invoiceService.generateInvoicePdf(transaction);
-        notificationService.sendInvoiceEmail(email, pdf, correlationId);
 
         executionLogService.logSuccess(
                 IntegrationType.RAZORPAY,
