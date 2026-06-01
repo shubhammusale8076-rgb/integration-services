@@ -10,7 +10,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "tenant_whatsapp_templates", indexes = {
-        @Index(name = "idx_wa_template_tenant_code", columnList = "tenantId, templateCode")
+        @Index(
+                name = "idx_wa_template_tenant_name",
+                columnList = "tenantId, templateName"
+        )
 })
 @Getter
 @Setter
